@@ -2,6 +2,24 @@
 
 A command-line tool to quickly set up development environments and project templates.
 
+# What is ezSetup?
+
+ezSetup is a lightweight yet robust tool that:
+
+- Creates the structure for various languages.
+- Installs required dependencies automatically.
+- Initializes Git using the appropriate .gitignore.
+- Sets up environment variables effortlessly.
+- set up a project using a costum template using YAML.
+
+# Why Go and Cobra?
+
+I built this project with the goal of learning Golang while solving a real problem for beginners or even just to speed up the process for some people.
+
+# Why did I create this?
+
+As a student, I noticed that many beginners struggle when setting up their projects. Some get stuck on dependencies, while others aren’t sure how to structure their code. ezSetup helps them dive straight into coding without the setup hassle!
+
 ## Features
 
 - 🌟 Interactive CLI with user-friendly prompts
@@ -16,7 +34,7 @@ A command-line tool to quickly set up development environments and project templ
 ### Setting Up Development Environment
 
 ```bash
-# Clone the repository
+# Fork the repository and clone it
 git clone https://github.com/yourusername/EzSetup.git
 
 # Navigate to the project directory
