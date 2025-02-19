@@ -122,16 +122,6 @@ This will:
 3. Install dependencies (optional)
 4. Set up project structure from template
 
-## Project Structure
-
-```
-EzSetup/
-├── cmd/
-│   ├── root.go
-│   └── flask.go
-└── main.go
-```
-
 ## Dependencies
 
 - github.com/spf13/cobra
