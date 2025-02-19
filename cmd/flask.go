@@ -4,8 +4,6 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +11,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/go-git/go-git/v5"
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -22,12 +21,6 @@ var flaskCmd = &cobra.Command{
 	Short: "Create a flask template project",
 
 	Run: func(cmd *cobra.Command, args []string) {
-
-		if len(args) > 0 {
-			fmt.Println("Invalid arguments")
-			return
-		}
-
 		projectPath := ""
 		homePath := ""
 
@@ -37,7 +30,7 @@ var flaskCmd = &cobra.Command{
 		case "linux":
 			homePath = os.Getenv("HOME") + "/flaskProject"
 		default:
-			fmt.Println("Unknown OS:", runtime.GOOS)
+			pterm.Error.Println("Unknown OS:", runtime.GOOS)
 		}
 
 		suggests := []string{
@@ -56,19 +49,15 @@ var flaskCmd = &cobra.Command{
 		absPath, err := filepath.Abs(projectPath)
 
 		if err != nil {
-			fmt.Println("Error getting absolute path:", err)
+			pterm.Error.Println("Error getting absolute path:", err)
 			return
 		}
 
 		err = os.MkdirAll(absPath, 0755)
 		if err != nil {
-			fmt.Println("Error creating directory:", err)
+			pterm.Error.Println("Error creating directory:", err)
 			return
 		}
-
-		git.PlainClone(absPath, false, &git.CloneOptions{
-			URL: "https://github.com/yassine20011/flaskTemplate.git",
-		})
 
 		confirmPrompt := &survey.Confirm{
 			Message: "Do you want to create a virtual environment?",
@@ -78,24 +67,71 @@ var flaskCmd = &cobra.Command{
 		createVenv := false
 		survey.AskOne(confirmPrompt, &createVenv)
 
-		if createVenv {
-			venvPrompt := &survey.Input{
-				Message: "Enter the virtual environment name: ",
-				Default: "venv",
-			}
+		venvPrompt := &survey.Input{
+			Message: "Enter the virtual environment name: ",
+			Default: "venv",
+		}
 
-			venvName := ""
-			survey.AskOne(venvPrompt, &venvName)
+		venvName := ""
+		survey.AskOne(venvPrompt, &venvName)
+
+		confirmPrompt = &survey.Confirm{
+			Message: "Do you want to install dependencies?",
+			Default: true,
+		}
+
+		installDeps := false
+		survey.AskOne(confirmPrompt, &installDeps)
+
+		pterm.Println()
+		pterm.Println("🚀 Setting up your Flask Project...")
+		pterm.Println()
+
+		pterm.Info.Println("Cloning flask template project...")
+		git.PlainClone(absPath, false, &git.CloneOptions{
+			URL: "https://github.com/yassine20011/flaskTemplate.git",
+		})
+
+		if createVenv {
 			command := exec.Command("python", "-m", "venv", venvName)
-			fmt.Println("Creating virtual environment at:", absPath)
+			pterm.Info.Printf("Creating virtual environment at %s\n", absPath)
 			command.Dir = absPath
 			err := command.Run()
 			if err != nil {
-				log.Fatal(err)
+				pterm.Error.Println(err)
+				return
+			}
+
+			pterm.Success.Println("Virtual environment created successfully")
+
+			if installDeps {
+				pterm.Info.Println("Installing dependencies...")
+				command = exec.Command("pip", "install", "-r", "requirements.txt")
+				command.Dir = absPath
+				err = command.Run()
+				spinner, _ := pterm.DefaultSpinner.Start("Installing dependencies...")
+				if err != nil {
+					pterm.Error.Println(err)
+					return
+				}
+				spinner.Success("Dependencies installed successfully")
 			}
 		}
 
-		fmt.Println("Project created at:", absPath)
+		pterm.Println()
+		pterm.Bold.Println("📌 Next Steps:")
+		pterm.Println()
+		pterm.Info.Println("1- Navigate to the project: cd " + absPath)
+		switch runtime.GOOS {
+		case "windows":
+			pterm.Info.Println("2- Activate the virtual environment: .\\venv\\Scripts\\activate")
+		case "linux":
+			pterm.Info.Println("2- Activate the virtual environment: source venv/bin/activate")
+		default:
+			pterm.Error.Println("Unknown OS:", runtime.GOOS)
+		}
+		pterm.Println()
+		pterm.Println("🎯 Happy Coding! 🚀")
 	},
 }
 
